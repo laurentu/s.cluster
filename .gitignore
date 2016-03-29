@@ -26,3 +26,13 @@
 *.exe
 *.out
 *.app
+
+
+CMakeCache.txt
+CMakeFiles/
+CMakeLists.txt.user
+Makefile
+cmake_install.cmake
+s.cluster
+s.cluster.cbp
+
