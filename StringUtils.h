@@ -18,6 +18,7 @@ public:
 	StringUtils();
 	virtual ~StringUtils();
 	static std::vector<std::string> Explode(const std::string &str, const std::string &sep);
+    static std::string Implode(const std::vector<std::string> array, const char sep);
 };
 
 } /* namespace stupid */

@@ -5,8 +5,21 @@
  *      Author: lulrich
  */
 
-int main(int argc, char **argv){
+#include <iostream>
+#include "StringUtils.h"
+#include "Configuration.h"
 
+using namespace stupid;
+int main(int argc, char **argv)
+{
+
+    Configuration cnf;
+
+    cnf.Read("cluster.conf");
+    cnf.Dump();
+
+    auto values = StringUtils::Explode("a,b,sdklfj,slmkdfj,", ", \t");
+    std::cout << StringUtils::Implode(values, ',') << std::endl;
 }
 
 

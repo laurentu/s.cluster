@@ -1,3 +1,3 @@
 project(s.cluster)
-add_executable(s.cluster cluster.cpp StringUtils.cpp )
+add_executable(s.cluster cluster.cpp StringUtils.cpp Configuration.cpp)
 
