@@ -9,6 +9,7 @@
 #include <thread>
 
 #include "Types.h"
+#include "Status.h"
 #include "StringUtils.h"
 #include "Configuration.h"
 
