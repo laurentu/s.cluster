@@ -33,7 +33,7 @@ int Configuration::Read(const std::string &filename)
     return Ok;
 }
 
-void Configuration::Dump(void)
+void Configuration::Dump(void) const
 {
     for( auto const &v:(*this))
     {

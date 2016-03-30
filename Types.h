@@ -8,5 +8,10 @@ enum ErrType {
     FileNotFound = 1
 };
 
+struct Status
+{
+    int self_network_health = 0;
+    int self_health = 0;
+};
 }
 #endif // TYPES_H

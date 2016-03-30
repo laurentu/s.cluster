@@ -14,7 +14,7 @@ class Configuration : public std::map<std::string, string_value_list>
 public:
     Configuration();
     int Read(const std::string &filename);
-    void Dump(void);
+    void Dump(void) const;
 };
 
 }
