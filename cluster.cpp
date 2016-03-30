@@ -13,14 +13,20 @@
 #include "StringUtils.h"
 #include "Configuration.h"
 
-using namespace stupid;
 
+namespace stupid {
+
+
+void network_check(const Configuration &conf, const Status &status);
 
 void network_check(const Configuration &conf, const Status &status)
 {
     std::cout << "Ping..." << std::this_thread::get_id() << std::endl;
     conf.Dump();
 }
+} // end of namespace stupid
+
+using namespace stupid;
 
 int main(int argc, char **argv)
 {
