@@ -18,9 +18,9 @@
 namespace stupid {
 
 
-void network_check(const Configuration &conf, const Status &status);
+void network_check(const Configuration &conf, Status &status);
 
-void network_check(const Configuration &conf, const Status &status)
+void network_check(const Configuration &conf, Status &status)
 {
     std::cout << "Ping..." << std::this_thread::get_id() << std::endl;
     conf.Dump();
@@ -32,22 +32,32 @@ void network_check(const Configuration &conf, const Status &status)
     {
         std::cout << "ARGGGGGGGHHHHH" << std::endl;
     }
-    ret = ping_host_add(pinger, "192.168.1.10");
-    if(ret != 0)
-    {
-        std::cout << "Could not add host " << "192.168.1.10" << std::endl;
-    }
-    ret = ping_host_add(pinger, "172.17.2.10");
-    if(ret != 0)
-    {
-        std::cout << "Could not add host " << "supervision-1" << std::endl;
-    }
 
+    string_value_list ping_hosts;
+    ret = conf.GetKeyValues("ping.nodes",ping_hosts);
+    if(ret != ErrType::Ok)
+    {
+        std::cout << "Error getting ping hosts" << std::endl;
+    }
+    for(auto const &host :ping_hosts)
+    {
+        ret = ping_host_add(pinger, host.c_str());
+        if(ret != 0)
+            std::cout << "Could not add host " << host << std::endl;
+        else
+            std::cout << "Host " << host << " added" << std::endl;
+    }
     std::cout << "Sending ping..." << std::endl;
     ret = ping_send(pinger);
+    if(ret>0)
+        status.SetNetworkStatus(0);
+    else
+        status.SetNetworkStatus(1);
+
     std::cout << "Received " << ret << " as response to pings" << std::endl;
-    ping_host_remove(pinger, "192.168.1.10");
-    ping_host_remove(pinger, "172.17.2.10");
+    for(auto const &host :ping_hosts)
+        ret = ping_host_remove(pinger, host.c_str());
+
     ping_destroy(pinger);
 }
 } // end of namespace stupid

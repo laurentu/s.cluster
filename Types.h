@@ -5,7 +5,8 @@ namespace stupid {
 
 enum ErrType {
     Ok = 0,
-    FileNotFound = 1
+    FileNotFound ,
+    KeyNotExists
 };
 
 

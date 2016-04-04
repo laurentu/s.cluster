@@ -42,12 +42,15 @@ void Configuration::Dump(void) const
 
 }
 
-string_value_list Configuration::GetKeyValue(const std::string &key)
+int Configuration::GetKeyValues(const std::string &key,string_value_list &values) const
 {
-    if(this->find(key)!=this->end())
+    auto e = find(key);
+
+    if(e!=this->end())
     {
-        return (*this)[key];
+        values = (*e).second;
+        return ErrType::Ok;
     }
-    return string_value_list();
+    return ErrType::KeyNotExists;
 }
 } // end of namespace stupid
