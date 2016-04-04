@@ -19,6 +19,22 @@ namespace stupid {
 
 
 void network_check(const Configuration &conf, Status &status);
+void self_health_check(const Configuration &conf, Status &status);
+
+void self_health_check(const Configuration &conf, Status &status)
+{
+    std::cout << "Self health checker online..." << std::endl;
+
+    string_value_list values;
+    int ret;
+    ret = conf.GetKeyValues("self.health", values);
+    if(ret != ErrType::Ok || values.size()<=0)
+    {
+        status.FatalError();
+        return;
+    }
+    ret = system(values[0].c_str());
+}
 
 void network_check(const Configuration &conf, Status &status)
 {
