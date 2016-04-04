@@ -5,8 +5,11 @@
  *      Author: lulrich
  */
 
+#define _XOPEN_SOURCE
+
 #include <iostream>
 #include <thread>
+#include <signal.h>
 
 #include "Types.h"
 #include "Status.h"
@@ -25,15 +28,28 @@ void self_health_check(const Configuration &conf, Status &status)
 {
     std::cout << "Self health checker online..." << std::endl;
 
-    string_value_list values;
-    int ret;
-    ret = conf.GetKeyValues("self.health", values);
-    if(ret != ErrType::Ok || values.size()<=0)
+    while(1)
     {
-        status.FatalError();
-        return;
+        string_value_list values;
+        int ret;
+        ret = conf.GetKeyValues("self.health", values);
+        if(ret != ErrType::Ok || values.size()<=0)
+        {
+            status.FatalError();
+            return;
+        }
+        ret = system(values[0].c_str());
+        int exit_status = WEXITSTATUS(ret);
+        if (WIFSIGNALED(ret) && (WTERMSIG(ret) == SIGINT || WTERMSIG(ret) == SIGQUIT))
+                 break;
+        std::cout << "Script returned " << exit_status << std::endl;
+        if(exit_status != 0)
+            status.SetSelfHealth(1);
+        else
+            status.SetSelfHealth(0);
+
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
-    ret = system(values[0].c_str());
 }
 
 void network_check(const Configuration &conf, Status &status)
@@ -91,9 +107,10 @@ int main(int argc, char **argv)
 
     std::cout << "Starting thread" << std::endl;
     std::thread network_check_t(network_check,std::ref(cnf), std::ref(status));
-
+    std::thread self_health_check_t(self_health_check,std::ref(cnf), std::ref(status));
 
     network_check_t.join();
+    self_health_check_t.join();
 
     std::cout << "This is the end" << std::endl;
     return 0;
