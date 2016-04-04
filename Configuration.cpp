@@ -41,4 +41,13 @@ void Configuration::Dump(void) const
     }
 
 }
+
+string_value_list Configuration::GetKeyValue(const std::string &key)
+{
+    if(this->find(key)!=this->end())
+    {
+        return (*this)[key];
+    }
+    return string_value_list();
+}
 } // end of namespace stupid

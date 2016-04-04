@@ -15,6 +15,7 @@ public:
     Configuration();
     int Read(const std::string &filename);
     void Dump(void) const;
+    string_value_list GetKeyValue(const std::string &key);
 };
 
 }
