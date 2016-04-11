@@ -14,13 +14,14 @@ public:
     Status();
     void SetNetworkStatus(int s);
     void SetSelfHealth(int s);
-    void FatalError(void);
+    void Exit(void);
+    int ShouldExit(void);
 private:
     std::mutex lock;
     int network_status;
     int self_health;
     std::map<std::string,int> partner_health;
-    int fatal_error;
+    int exit;
 };
 
 }

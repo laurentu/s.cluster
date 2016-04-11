@@ -4,7 +4,7 @@ namespace stupid {
 
 Status::Status()
 {
-    this->fatal_error = -1;
+    this->exit = 0;
     this->network_status = -1;
     this->self_health = -1;
 }
@@ -21,8 +21,12 @@ void Status::SetSelfHealth(int s)
     this->self_health = s;
     this->lock.unlock();
 }
-void Status::FatalError()
+void Status::Exit()
 {
-    this->fatal_error = 0;
+    this->exit = 1;
+}
+int Status::ShouldExit(void)
+{
+    return this->exit;
 }
 }
