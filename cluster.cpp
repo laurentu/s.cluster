@@ -13,6 +13,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "Types.h"
 #include "Status.h"
@@ -20,7 +21,6 @@
 #include "Configuration.h"
 
 
-#include <oping.h>
 
 stupid::Status status;
 
@@ -76,21 +76,13 @@ void self_health_check(const Configuration &conf, Status &status)
 
 void network_check(const Configuration &conf, Status &status)
 {
-    std::cout << "Ping..." << std::this_thread::get_id() << std::endl;
-    conf.Dump();
-
     while(!status.ShouldExit())
     {
-        pingobj_t           *pinger = nullptr;
         int                 ret = 0;
         string_value_list   values;
         int                 interval = 0;
-
-        pinger = ping_construct();
-        if(pinger == nullptr)
-        {
-            std::cout << "ARGGGGGGGHHHHH" << std::endl;
-        }
+        int                 exit_status = 0;
+        bool                pinged = false;
 
         string_value_list ping_hosts;
         ret = conf.GetKeyValues("ping.nodes",ping_hosts);
@@ -107,24 +99,27 @@ void network_check(const Configuration &conf, Status &status)
 
         for(auto const &host :ping_hosts)
         {
-            ret = ping_host_add(pinger, host.c_str());
-            if(ret != 0)
-                std::cout << "Could not add host " << host << std::endl;
-            else
-                std::cout << "Host " << host << " added" << std::endl;
+
+            std::string cmd = "ping -c1 -W2 " + host;
+
+            std::cout << "Running " << cmd << std::endl;
+            ret = system(cmd.c_str());
+            exit_status = WEXITSTATUS(ret);
+            if (WIFSIGNALED(ret) && (WTERMSIG(ret) == SIGINT || WTERMSIG(ret) == SIGQUIT))
+            {
+                     break;
+            }
+            if(exit_status == 0)
+            {
+                pinged = true;
+                break;
+            }
         }
-        std::cout << "Sending ping..." << std::endl;
-        ret = ping_send(pinger);
-        if(ret>0)
+        if(pinged)
             status.SetNetworkStatus(0);
         else
             status.SetNetworkStatus(1);
 
-        std::cout << "Received " << ret << " as response to pings" << std::endl;
-        for(auto const &host :ping_hosts)
-            ret = ping_host_remove(pinger, host.c_str());
-
-        ping_destroy(pinger);
         std::this_thread::sleep_for(std::chrono::seconds(interval));
     }
 }
@@ -155,6 +150,7 @@ int main(int argc, char **argv)
 
     cnf.Read("cluster.conf");
     cnf.Dump();
+
 
     ret = cnf.GetKeyValues("uid",values);
     if( ret != ErrType::Ok || values.size()==0)
@@ -198,6 +194,7 @@ int main(int argc, char **argv)
         exit(EXIT_SUCCESS);
 
 
+
     umask(0);
 
     ret = setgid(gid);
@@ -227,7 +224,7 @@ int main(int argc, char **argv)
 
     signal(SIGINT,signal_handler);
     signal(SIGQUIT,signal_handler);
-    std::cout << "Starting thread" << std::endl;
+
     std::thread network_check_t(network_check,std::ref(cnf), std::ref(status));
     std::thread self_health_check_t(self_health_check,std::ref(cnf), std::ref(status));
 
