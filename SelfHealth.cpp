@@ -1,8 +1,10 @@
 #include "Types.h"
 #include "Configuration.h"
 #include "Status.h"
+#include "Logger.h"
 
 #include <iostream>
+#include <sstream>
 #include <thread>
 #include <signal.h>
 
@@ -19,6 +21,8 @@ namespace stupid {
 void self_health_check(const Configuration &conf, Status &status)
 {
     // Loop until end of process is signaled (kill)
+    Logger log("HealthChecker");
+
     while(!status.ShouldExit())
     {
         int                 exit_status = 0;
@@ -28,7 +32,7 @@ void self_health_check(const Configuration &conf, Status &status)
         int                 interval = 0;
 
 
-        std::cout << "Self health checker online..." << std::endl;
+        log.LogDebug("Self health checker online...");
 
         ret = conf.GetKeyValues("self.health", values);
         if(ret != ErrType::Ok || values.size()<=0)
@@ -44,14 +48,18 @@ void self_health_check(const Configuration &conf, Status &status)
             interval = std::stoi(values[0]);
         else
             interval = 1;
-        std::cout << "Running " << script.c_str() << std::endl;
+        log.LogDebug(std::string("Running:")+script);
+
         ret = system(script.c_str());
         exit_status = WEXITSTATUS(ret);
         if (WIFSIGNALED(ret) && (WTERMSIG(ret) == SIGINT || WTERMSIG(ret) == SIGQUIT))
         {
                  break;
         }
-        std::cout << "Script " << script << " returned " << exit_status << std::endl;
+        std::stringstream zz;
+        zz << "Script " << script << " returned " << exit_status;
+        log.LogDebug(zz.str());
+
         if(exit_status != 0)
             status.SetSelfHealth(1);
         else
